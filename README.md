@@ -1,5 +1,21 @@
 # Dad's Records
 
+### Setup
+
+TODO, Add steps for:
+
+- setting up python environment
+
+- adding open AI API Key
+
+- adding Discogs API Key
+
+
+TODO: make sure that the Open API isn't called too much it gets
+expensive (right now need to manually move images out of the `vinyls`
+folder)
+
+
 ### Steps
 
 1. move images into `vinyl` directory
