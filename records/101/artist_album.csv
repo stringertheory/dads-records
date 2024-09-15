@@ -1,26 +1,26 @@
-artist,album,is_record,image
-William Bolcom,Second Sonata / Duo Fantasy / Graceful Ghost,True,records/101/PXL_20240913_215524117.jpg
-"Beethoven, conducted by Carlo Maria Giulini",Mass in C,True,records/101/PXL_20240913_215532201.jpg
-"Bruckner, Staatskapelle Dresden, Eugen Jochum",Symphony No. 8,True,records/101/PXL_20240913_215541689.jpg
-Sky,Sky,True,records/101/PXL_20240913_215550740.MP.jpg
-Hamza El Din,Escalay: The Water Wheel,True,records/101/PXL_20240913_215557899.jpg
-Bartók,The Miraculous Mandarin / The Wooden Prince,True,records/101/PXL_20240913_215604120.jpg
-Ranger Andy,The Songs of Ranger Andy,True,records/101/PXL_20240913_215609271.jpg
-Bob Dylan,Bob Dylan,True,records/101/PXL_20240913_215614600.MP.jpg
-Joan Baez,One Day at a Time,True,records/101/PXL_20240913_215621740.jpg
-Cleo Laine,gonna get through,True,records/101/PXL_20240913_215626931.MP.jpg
-The Hungarian Quartet,The Middle Quartets,True,records/101/PXL_20240913_215633380.jpg
-Celtic Thunder,Celtic Thunder,True,records/101/PXL_20240913_215638798.jpg
-Led Zeppelin,Led Zeppelin IV,True,records/101/PXL_20240913_215645597.jpg
-Lui Pui-yuen,Floating Petals... Wild Geese... The Moon on High: Music of the Chinese Pipa,True,records/101/PXL_20240913_215655163.jpg
-Bill Evans Trio,Bill Evans Trio with Symphony Orchestra,True,records/101/PXL_20240913_215701924.MP.jpg
-Meredith Willson,The Music Man (Original Soundtrack),True,records/101/PXL_20240913_215708798.jpg
-Muddy Waters,'Unk' in Funk,True,records/101/PXL_20240913_215716653.jpg
-The Chieftains,The Chieftains 4,True,records/101/PXL_20240913_215723023.jpg
-Miles Davis,Sketches of Spain,True,records/101/PXL_20240913_215731363.jpg
-Simon and Garfunkel,Bridge Over Troubled Water,True,records/101/PXL_20240913_215737752.jpg
-Stevie Ray Vaughan and Double Trouble,Couldn't Stand the Weather,True,records/101/PXL_20240913_215744676.MP.jpg
-Jethro Tull,Crest of a Knave,True,records/101/PXL_20240913_215751088.jpg
-Joshua Rifkin,"Piano Rags by Scott Joplin, Volume II",True,records/101/PXL_20240913_215756841.jpg
-Al Caiola,Solid Gold Guitar,True,records/101/PXL_20240913_215805073.jpg
-Shostakovich,Symphony No. 14,True,records/101/PXL_20240913_215811662.jpg
+record_label,catalog_number,artist,album,image
+Nonesuch,79038,William Bolcom,Second Sonata / Duo Fantasy / Graceful Ghost,records/101/PXL_20240913_215524117.jpg
+Angel,S-36478,Beethoven,Mass in C,records/101/PXL_20240913_215532201.jpg
+Angel,SLS-3893,Bruckner,Symphony No. 8,records/101/PXL_20240913_215541689.jpg
+,,Sky,Sky,records/101/PXL_20240913_215550740.MP.jpg
+Nonesuch,H-72074,Hamza El Din,Escalay: The Water Wheel,records/101/PXL_20240913_215557899.jpg
+Vox,STPL 512.560,Bartók,The Miraculous Mandarin / The Wooden Prince,records/101/PXL_20240913_215604120.jpg
+,,Ranger Andy,The Songs of Ranger Andy,records/101/PXL_20240913_215609271.jpg
+Columbia,CL 1779,Bob Dylan,Bob Dylan,records/101/PXL_20240913_215614600.MP.jpg
+Vanguard,VSD-79310,Joan Baez,One Day At A Time,records/101/PXL_20240913_215621740.jpg
+RCA,AFL1-2964,Cleo Laine,gonna get through,records/101/PXL_20240913_215626931.MP.jpg
+Seraphim,IC-6066,The Hungarian Quartet,Beethoven: The Middle Quartets,records/101/PXL_20240913_215633380.jpg
+,,Celtic Thunder,Celtic Thunder,records/101/PXL_20240913_215638798.jpg
+Atlantic Records,SD 7208,Led Zeppelin,Untitled (Led Zeppelin IV),records/101/PXL_20240913_215645597.jpg
+Nonesuch,,Lui Pui-yuen,Floating Petals... Wild Geese... The Moon on High - Music of the Chinese Pipa,records/101/PXL_20240913_215655163.jpg
+Verve,V6-8640,Bill Evans Trio,Bill Evans Trio with Symphony Orchestra,records/101/PXL_20240913_215701924.MP.jpg
+Warner Bros.,1459,Meredith Willson,The Music Man (Original Soundtrack),records/101/PXL_20240913_215708798.jpg
+,CH 60033,Muddy Waters,'Unk' in Funk,records/101/PXL_20240913_215716653.jpg
+Claddagh Records,CC19,The Chieftains,The Chieftains 4,records/101/PXL_20240913_215723023.jpg
+Columbia,CL 1480,Miles Davis,Sketches of Spain,records/101/PXL_20240913_215731363.jpg
+,,Simon and Garfunkel,Bridge Over Troubled Water,records/101/PXL_20240913_215737752.jpg
+,,Stevie Ray Vaughan and Double Trouble,Couldn't Stand the Weather,records/101/PXL_20240913_215744676.MP.jpg
+,,Jethro Tull,Crest of a Knave,records/101/PXL_20240913_215751088.jpg
+Nonesuch,H-71314,Joshua Rifkin,"Piano Rags by Scott Joplin, Volume II",records/101/PXL_20240913_215756841.jpg
+United Artists,UAS 6190,Al Caiola,Solid Gold Guitar,records/101/PXL_20240913_215805073.jpg
+Мелодия,C10 06015 006,Shostakovich,Symphony No. 14,records/101/PXL_20240913_215811662.jpg

@@ -18,33 +18,48 @@ def get_filenames():
     filename_list = glob.glob(os.path.join(batch_directory, extension))
     print(f"found {len(filename_list)} {extension} files", file=sys.stderr)
 
-    out_filename = os.path.join(batch_directory, "artist_album.csv")
-    return out_filename, filename_list
+    out_basename = os.path.join(batch_directory, "artist_album")
+    return out_basename, filename_list
 
 
 def get_image_data(client, image_path):
     with open(image_path, "rb") as image_file:
+        print(f"calling gpt-4o with {image_path}", file=sys.stderr)
         response = client.chat.completions.create(
             model="gpt-4o-2024-08-06",
             temperature=0,
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an record collector and music enthusiast with an encyclopedic knowledge of all kinds of music.",
+                    "content": "You are an record collector and music enthusiast with a keen attention to detail.",
                 },
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": """What album is in this image?
+                            "text": """Your task is to identify the album based on the visual information provided in the image.
 
-                            Return a json with:
-                            - is_record: true of false, whether there is an album in the image
-                            - artist: The name of the artist.
-                            - album: The name of the album.
+Carefully analyze the image and look for the following elements:
+1. The name of the artist or band
+2. The title of the album
+3. The record label of the album
+4. The catalog number of the album
 
-                            Make your best guesses even if you are not sure.
+First, identify whether these elements are present within the image. Then, identify the album to the best of your ability.
+
+Think step by step before deciding on your final answers.
+
+Use the following format for your response:
+
+{
+  "artist": "the name of the artist",
+  "album": "the title of the album",
+  "record_label": "the record label of the album",
+  "catalog_number": "the catalog number of the album",
+  "has_record_label": "whether the record label is present within the image",
+  "has_catalog_number": "whether the catalog number is present within the image"
+}
                             """,
                         },
                         {
@@ -72,9 +87,19 @@ def get_image_data(client, image_path):
                                 "type": "string",
                             },
                             "artist": {"type": "string"},
-                            "is_record": {"type": "boolean"},
+                            "record_label": {"type": "string"},
+                            "catalog_number": {"type": "string"},
+                            "has_record_label": {"type": "boolean"},
+                            "has_catalog_number": {"type": "boolean"},
                         },
-                        "required": ["album", "artist", "is_record"],
+                        "required": [
+                            "album",
+                            "artist",
+                            "record_label",
+                            "catalog_number",
+                            "has_record_label",
+                            "has_catalog_number",
+                        ],
                         "additionalProperties": False,
                     },
                 },
@@ -90,7 +115,7 @@ def get_image_data(client, image_path):
 def main():
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_DAD"))
 
-    out_filename, image_filename_list = get_filenames()
+    out_basename, image_filename_list = get_filenames()
 
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -103,15 +128,65 @@ def main():
             results.append(future.result())
 
     results.sort(key=lambda i: i["image"])
-            
-    print(f"writing {len(results)} results", file=sys.stderr)
-    with open(out_filename, "w") as csvfile:
+
+    print(f"writing csv with {len(results)} results", file=sys.stderr)
+    with open(out_basename + ".csv", "w") as csvfile:
         writer = csv.DictWriter(
-            csvfile, fieldnames=["artist", "album", "is_record", "image"]
+            csvfile,
+            fieldnames=[
+                "record_label",
+                "catalog_number",
+                "artist",
+                "album",
+                "image",
+            ],
+            extrasaction="ignore",
         )
         writer.writeheader()
         writer.writerows(results)
 
+    print(results)
+        
+    print(f"writing html with {len(results)} results", file=sys.stderr)
+    with open(out_basename + ".html", "w") as outfile:
+        outfile.write("""
+<style>
+  .container {
+      display: grid;
+      grid-gap: 0.5em;
+      grid-template-columns: repeat(auto-fit, 200px);
+      font-family: system-ui, sans-serif;
+  }
+  img {
+      width: 100%;
+      margin-bottom: 0.5em;
+  }
+  p {
+      margin: 0;
+  }
+  .album {
+      font-weight: bold;
+  }
+  .artist {
+  }
+  .record_label, .catalog_number {
+      color: grey;
+  }
+  .record_label::after {
+      content: ": ";
+  }
+</style>
+        """)
+        outfile.write("<div class='container'>")
+        for row in results:
+            outfile.write("<div class='tile'>")
+            outfile.write(f"<a href='{os.path.basename(row['image'])}'><img src='{os.path.basename(row['image'])}'/></a>")
+            outfile.write(f"<p class='album'>{row['album']}</p>")
+            outfile.write(f"<p class='artist'>{row['artist']}</p>")
+            outfile.write(f"<p><span class='record_label'>{row['record_label']}</span><span class='catalog_number'>{row['catalog_number']}</span></p>")
+            outfile.write("</div>\n")
+        outfile.write("</div>")
+        
 
 if __name__ == "__main__":
     main()
