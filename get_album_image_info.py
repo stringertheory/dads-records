@@ -1,13 +1,16 @@
+import sys
 import base64
 import concurrent.futures
 import csv
 import glob
 import json
+import os
 
 from openai import OpenAI
 
-client = OpenAI()
+filename_list = sys.argv[1:]
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_DAD"))
 
 def get_image_data(image_path):
     with open(image_path, "rb") as image_file:
@@ -78,7 +81,7 @@ results = []
 with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
     futures = {
         executor.submit(get_image_data, f): i
-        for (i, f) in enumerate(glob.glob("vinyls/*.jpg"))
+        for (i, f) in enumerate(filename_list)
     }
     for future in concurrent.futures.as_completed(futures):
         i = futures[future]
