@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Batch {{batch_number}}</title>
+    <style>
+      .container {
+	  display: grid;
+	  grid-gap: 0.5em;
+	  grid-template-columns: repeat(auto-fit, 200px);
+	  font-family: system-ui, sans-serif;
+      }
+      img {
+	  width: 100%;
+	  margin-bottom: 0.5em;
+      }
+      p {
+	  margin: 0;
+      }
+      .album {
+	  font-weight: bold;
+      }
+      .artist {
+      }
+      .record_label, .catalog_number {
+	  color: grey;
+      }
+      .record_label::after {
+	  content: ": ";
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      {% for a in results %}
+      <div class='tile'><a href='{{a["img"]}}'><img src='{{a["img"]}}'/></a><p class='album'>{{a["album"]}}</p><p class='artist'>{{a["artist"]}}</p><p><span class='record_label'>{{a["record_label"]}}</span> <span class='catalog_number'>{{a["catalog_number"]}}</span></p></div>
+      {% endfor %}
+    </div>
+  </body>
+</html>
