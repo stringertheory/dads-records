@@ -19,7 +19,6 @@ def get_filenames():
     
     extension = "*.jpg"
     filename_list = glob.glob(os.path.join(batch_directory, extension))
-    filename_list = filename_list[:2]
     print(f"found {len(filename_list)} {extension} files", file=sys.stderr)
 
     return batch_number, batch_directory, filename_list
