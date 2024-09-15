@@ -5,6 +5,7 @@ import csv
 import glob
 import json
 import os
+import jinja2
 
 from openai import OpenAI
 
@@ -14,12 +15,14 @@ def get_filenames():
     if not os.path.isdir(batch_directory):
         raise ValueError(f"{batch_directory} is not a directory")
 
+    batch_number = batch_directory.strip(" /").split("/")[-1]
+    
     extension = "*.jpg"
     filename_list = glob.glob(os.path.join(batch_directory, extension))
+    filename_list = filename_list[:2]
     print(f"found {len(filename_list)} {extension} files", file=sys.stderr)
 
-    out_basename = os.path.join(batch_directory, "artist_album")
-    return out_basename, filename_list
+    return batch_number, batch_directory, filename_list
 
 
 def get_image_data(client, image_path):
@@ -114,8 +117,17 @@ Use the following format for your response:
 
 def main():
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_DAD"))
+    
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("templates"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
 
-    out_basename, image_filename_list = get_filenames()
+    
+    batch_number, batch_directory, image_filename_list = get_filenames()
+    csv_filename = os.path.join(batch_directory, "artist_album.csv")
+    html_filename = os.path.join(batch_directory, "index.html")
 
     results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -130,7 +142,7 @@ def main():
     results.sort(key=lambda i: i["image"])
 
     print(f"writing csv with {len(results)} results", file=sys.stderr)
-    with open(out_basename + ".csv", "w") as csvfile:
+    with open(csv_filename, "w") as csvfile:
         writer = csv.DictWriter(
             csvfile,
             fieldnames=[
@@ -145,48 +157,16 @@ def main():
         writer.writeheader()
         writer.writerows(results)
 
-    print(results)
-        
     print(f"writing html with {len(results)} results", file=sys.stderr)
-    with open(out_basename + ".html", "w") as outfile:
-        outfile.write("""
-<style>
-  .container {
-      display: grid;
-      grid-gap: 0.5em;
-      grid-template-columns: repeat(auto-fit, 200px);
-      font-family: system-ui, sans-serif;
-  }
-  img {
-      width: 100%;
-      margin-bottom: 0.5em;
-  }
-  p {
-      margin: 0;
-  }
-  .album {
-      font-weight: bold;
-  }
-  .artist {
-  }
-  .record_label, .catalog_number {
-      color: grey;
-  }
-  .record_label::after {
-      content: ": ";
-  }
-</style>
-        """)
-        outfile.write("<div class='container'>")
-        for row in results:
-            outfile.write("<div class='tile'>")
-            outfile.write(f"<a href='{os.path.basename(row['image'])}'><img src='{os.path.basename(row['image'])}'/></a>")
-            outfile.write(f"<p class='album'>{row['album']}</p>")
-            outfile.write(f"<p class='artist'>{row['artist']}</p>")
-            outfile.write(f"<p><span class='record_label'>{row['record_label']}</span><span class='catalog_number'>{row['catalog_number']}</span></p>")
-            outfile.write("</div>\n")
-        outfile.write("</div>")
-        
+    # use relative image path
+    for row in results:
+        row["img"] = os.path.basename(row["image"])        
+    html = template_env.get_template("batch.html").render(
+        batch_number=batch_number, results=results,
+    )    
+    with open(html_filename, "w") as outfile:
+        outfile.write(html)
+
 
 if __name__ == "__main__":
     main()
