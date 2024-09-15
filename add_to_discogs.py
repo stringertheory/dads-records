@@ -9,11 +9,14 @@ import requests
 import requests_cache
 
 username = "tomstringer"
-folder_id = "7751405"  # BeepBopBoop
 token = os.getenv("DISCOGS_TOKEN_DAD")
 api_url = "https://api.discogs.com"
 batch_field_id = 4
-
+beep_bop_boop_id = "7751405"
+catalog_folder_id = "7758311"
+label_folder_id = "7758317"
+name_folder_id = "7758320"
+manual_folder_id = "7758341"
 
 def sleep(response):
     if hasattr(response, "from_cache") and not response.from_cache:
@@ -63,14 +66,12 @@ def main():
 
         queries = []
         if row["catalog_number"] and row["record_label"]:
-            queries.append(f"{row['artist']} {row['album']} {row['record_label']} {row['catalog_number']}")
+            queries.append((catalog_folder_id, f"{row['artist']} {row['album']} {row['record_label']} {row['catalog_number']}"))
         if row["record_label"]:
-            queries.append(f"{row['artist']} {row['album']} {row['record_label']}")
-        queries.append(f"{row['artist']} {row['album']}")
-
-        print(queries)
+            queries.append((label_folder_id, f"{row['artist']} {row['album']} {row['record_label']}"))
+        queries.append((name_folder_id, f"{row['artist']} {row['album']}"))
         
-        for query in queries:
+        for folder_id, query in queries:
         
             query_params = {
                 "q": query,
@@ -87,6 +88,10 @@ def main():
             if release_id:
                 break
 
+        if not release_id:
+            print(f"{'*' * 20} didn't find match for {query}", file=sys.stderr)
+            continue
+            
         url = f"{api_url}/users/{username}/collection/folders/{folder_id}/releases/{release_id}"
 
         print(f"adding release {release_id}", file=sys.stderr)
