@@ -48,3 +48,11 @@ If no matches, then remove the label, take "best" match.
 "Best" match can start as first match. But it would probably be better
 to define a similarity metric based on matching to the different
 fields (and then give ties to US releases).
+
+Also good to keep in mind that the Discogs value estimate is [probably
+high](https://www.reddit.com/r/vinyl/comments/bfxbmc/how_accurate_is_discogs_estimated_collection_value/). Seems
+like the "median" value is probably a decent estimate of what a record
+in VG+ quality would sell for. Probably a little bit high, because
+Discogs only looks at the past sales, not how recent they are (so the
+median might be based on sales from many years ago and nobody has
+bought one in a long time).
