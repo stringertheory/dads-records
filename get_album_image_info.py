@@ -102,6 +102,8 @@ def main():
             i = futures[future]
             results.append(future.result())
 
+    results.sort(key=lambda i: i["image"])
+            
     print(f"writing {len(results)} results", file=sys.stderr)
     with open(out_filename, "w") as csvfile:
         writer = csv.DictWriter(
