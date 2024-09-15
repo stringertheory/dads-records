@@ -23,11 +23,8 @@ folder)
  move batch of images and into the correct directory and resize (with
  correct batch number and download folder, this is for 101)
 
-2. run `get_album_image_info.py records/101` to make spreadsheet with
-   artist/album names
-
-3. run `add_to_discogs.py records/101` to add to "BeepBopBoop" folder
-   in discogs and label with the batch number
+2. run `./run.sh records/101` to do image recognition, make and
+   publish website, and update catalog on discogs.
 
 ### Notes
 
