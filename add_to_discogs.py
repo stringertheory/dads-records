@@ -17,6 +17,7 @@ catalog_folder_id = "7758311"
 label_folder_id = "7758317"
 name_folder_id = "7758320"
 manual_folder_id = "7758341"
+testing_folder_id = "7758632"
 
 def sleep(response):
     if hasattr(response, "from_cache") and not response.from_cache:
@@ -91,7 +92,9 @@ def main():
         if not release_id:
             print(f"{'*' * 20} didn't find match for {query}", file=sys.stderr)
             continue
-            
+
+        # folder_id = testing_folder_id
+        
         url = f"{api_url}/users/{username}/collection/folders/{folder_id}/releases/{release_id}"
 
         print(f"adding release {release_id}", file=sys.stderr)
