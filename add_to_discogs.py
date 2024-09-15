@@ -17,7 +17,7 @@ batch_field_id = 4
 
 def sleep(response):
     if hasattr(response, "from_cache") and not response.from_cache:
-        delay = 0.5 + random.random()
+        delay = 0.6 + random.random()
         print(f"sleep for {delay:.1f}")
         time.sleep(delay)
     else:
@@ -39,6 +39,10 @@ def get_filenames():
 
     return csv_filename, batch_number
 
+def get_best_result(data):
+    if data["results"]:
+        return data["results"][0]["id"]
+            
 
 def main():
     csv_filename, batch_number = get_filenames()
@@ -56,19 +60,32 @@ def main():
         ]
 
     for row in data:
-        query = f"{row['artist']} - {row['album']}"
-        query_params = {
-            "q": query,
-            "type": "release",
-            "token": token,
-        }
 
-        url = f"{api_url}/database/search"
-        print(f"making query {query}", file=sys.stderr)
-        response = session.get(url, params=query_params)
-        sleep(response)
-        data = response.json()
-        release_id = data["results"][0]["id"]
+        queries = []
+        if row["catalog_number"] and row["record_label"]:
+            queries.append(f"{row['artist']} {row['album']} {row['record_label']} {row['catalog_number']}")
+        if row["record_label"]:
+            queries.append(f"{row['artist']} {row['album']} {row['record_label']}")
+        queries.append(f"{row['artist']} {row['album']}")
+
+        print(queries)
+        
+        for query in queries:
+        
+            query_params = {
+                "q": query,
+                "type": "release",
+                "token": token,
+            }
+            
+            url = f"{api_url}/database/search"
+            print(f"making query {query}", file=sys.stderr)
+            response = session.get(url, params=query_params)
+            sleep(response)
+            data = response.json()
+            release_id = get_best_result(data)
+            if release_id:
+                break
 
         url = f"{api_url}/users/{username}/collection/folders/{folder_id}/releases/{release_id}"
 
@@ -89,7 +106,7 @@ def main():
                 "Content-Type": "application/json",
             },
             params={"token": token},
-            data=json.dumps({"value": batch_number}),
+            data=json.dumps({"value": f"{batch_number}"}),
         )
         sleep(response)
 
