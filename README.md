@@ -39,3 +39,12 @@ value is for different releases for each album, and then use that to
 make a short list of albums to check more thoroughly to see if it's
 worth $$$.
 
+With label and catalog # info:
+
+First try searching for releases including all fields, take "best" match.
+If no matches, then remove the catalog number, take the "best" match.
+If no matches, then remove the label, take "best" match.
+
+"Best" match can start as first match. But it would probably be better
+to define a similarity metric based on matching to the different
+fields (and then give ties to US releases).
