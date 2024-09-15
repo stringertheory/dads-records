@@ -8,11 +8,21 @@ import os
 
 from openai import OpenAI
 
-filename_list = sys.argv[1:]
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_DAD"))
+def get_filenames():
+    batch_directory = sys.argv[1]
+    if not os.path.isdir(batch_directory):
+        raise ValueError(f"{batch_directory} is not a directory")
 
-def get_image_data(image_path):
+    extension = "*.jpg"
+    filename_list = glob.glob(os.path.join(batch_directory, extension))
+    print(f"found {len(filename_list)} {extension} files", file=sys.stderr)
+
+    out_filename = os.path.join(batch_directory, "artist_album.csv")
+    return out_filename, filename_list
+
+
+def get_image_data(client, image_path):
     with open(image_path, "rb") as image_file:
         response = client.chat.completions.create(
             model="gpt-4o-2024-08-06",
@@ -77,20 +87,29 @@ def get_image_data(image_path):
         return data
 
 
-results = []
-with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-    futures = {
-        executor.submit(get_image_data, f): i
-        for (i, f) in enumerate(filename_list)
-    }
-    for future in concurrent.futures.as_completed(futures):
-        i = futures[future]
-        results.append(future.result())
+def main():
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_DAD"))
 
-with open("results.csv", "w") as csvfile:
-    print("results", results)
-    writer = csv.DictWriter(
-        csvfile, fieldnames=["artist", "album", "is_record", "image"]
-    )
-    writer.writeheader()
-    writer.writerows(results)
+    out_filename, image_filename_list = get_filenames()
+
+    results = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {
+            executor.submit(get_image_data, client, f): i
+            for (i, f) in enumerate(image_filename_list)
+        }
+        for future in concurrent.futures.as_completed(futures):
+            i = futures[future]
+            results.append(future.result())
+
+    print(f"writing {len(results)} results", file=sys.stderr)
+    with open(out_filename, "w") as csvfile:
+        writer = csv.DictWriter(
+            csvfile, fieldnames=["artist", "album", "is_record", "image"]
+        )
+        writer.writeheader()
+        writer.writerows(results)
+
+
+if __name__ == "__main__":
+    main()
