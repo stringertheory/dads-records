@@ -94,6 +94,8 @@ def main():
 
         if not release_id:
             print(f"{'*' * 120}\n\ndidn't find match for {query}\n\n{'*' * 120}", file=sys.stderr)
+            with open('no-matches.txt', 'a') as outfile:
+                print(query + f" (batch number {batch_number})", file=outfile)
             continue
 
         # folder_id = testing_folder_id
