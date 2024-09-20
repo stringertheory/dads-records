@@ -5,7 +5,6 @@ import csv
 import glob
 import json
 import os
-import jinja2
 
 from openai import OpenAI
 
@@ -16,7 +15,7 @@ def get_filenames():
         raise ValueError(f"{batch_directory} is not a directory")
 
     batch_number = batch_directory.strip(" /").split("/")[-1]
-    
+
     extension = "*.jpg"
     filename_list = glob.glob(os.path.join(batch_directory, extension))
     print(f"found {len(filename_list)} {extension} files", file=sys.stderr)
@@ -116,14 +115,7 @@ Use the following format for your response:
 
 def main():
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY_DAD"))
-    
-    template_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader("templates"),
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
 
-    
     batch_number, batch_directory, image_filename_list = get_filenames()
     csv_filename = os.path.join(batch_directory, "artist_album.csv")
     html_filename = os.path.join(batch_directory, "index.html")
@@ -155,16 +147,6 @@ def main():
         )
         writer.writeheader()
         writer.writerows(results)
-
-    print(f"writing html with {len(results)} results", file=sys.stderr)
-    # use relative image path
-    for row in results:
-        row["img"] = os.path.basename(row["image"])        
-    html = template_env.get_template("batch.html").render(
-        batch_number=batch_number, results=results,
-    )    
-    with open(html_filename, "w") as outfile:
-        outfile.write(html)
 
 
 if __name__ == "__main__":
