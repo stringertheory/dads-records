@@ -7,18 +7,18 @@ import json
 
 from add_to_discogs import username, token, api_url, sleep, batch_field_id
 
-def get_all_releases(folder_id=0):
+def get_all_releases(folder_id=0, per_page=250, first_page_only=False):
     url = f"{api_url}/users/{username}/collection/folders/{folder_id}/releases"
     page = 1
     result = []
     while True:
         response = requests.get(url, params={
-            "page": page, "per_page": 100, "token": token
+            "page": page, "per_page": per_page, "token": token
         })
         sleep(response)
         data = response.json()
         result.extend(data["releases"])
-        if data["pagination"]["page"] >= data["pagination"]["pages"]:
+        if data["pagination"]["page"] >= data["pagination"]["pages"] or first_page_only:
             break
         page += 1
     return result
