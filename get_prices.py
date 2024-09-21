@@ -5,13 +5,12 @@ import time
 
 import requests
 import requests_cache
-from bs4 import BeautifulSoup
+from selectolax.parser import HTMLParser
 
 from reverse_batch_names import get_all_releases, sleep
 
 
 def fetch_page(session, release_id, page=1):
-
     url = f"https://www.discogs.com/sell/release/{release_id}"
     params = {"sort": "price,desc", "limit": 250, "ev": "rb"}
     if page > 1:
@@ -37,92 +36,73 @@ def fetch_page(session, release_id, page=1):
     return response
 
 
-def parse_statistics_section(soup):
+def parse_statistics_section(tree):
     statistics = {}
 
     # Find the div with id="statistics"
-    statistics_section = soup.find("div", id="statistics")
-
-    # Check if the section exists
-    # Find all <li> elements within the section
-    stats_items = statistics_section.find_all("li")
+    statistics_section = tree.css_first("div.statistics")
 
     # Loop through each <li> and extract key-value pairs
-    for item in stats_items:
-        key = item.text.split(":")[0].strip(": \n").strip()
-        value = item.text.split(":")[1].strip(": \n").strip()
+    for item in statistics_section.css("li"):
+        key = item.text().split(":")[0].strip(": \n").strip()
+        value = item.text().split(":")[1].strip(": \n").strip()
         statistics[key] = value
 
     return statistics
 
 
-def parse_records_for_sale(soup, conversions):
+def parse_records_for_sale(tree, conversions):
     records = []
 
     # Locate the table with the records using the <tr> elements
-    for tr in soup.find_all("tr", class_="shortcut_navigable"):
+    for tr in tree.css("tr.shortcut_navigable"):
         record = {}
 
         # condition
-        notes = (
-            tr.find("p", class_="item_condition")
-            .find_next_sibling("p", class_="hide_mobile")
-            .text.strip()
-        )
-        try:
-            media_condition = (
-                tr.find("span", string=re.compile("Media:"))
-                .find_next_sibling("span")
-                .text.strip()
-                .split("\n")[0]
-                .strip()
-            )
-        except AttributeError:
-            media_condition = None
+        notes = tr.css_first("p.item_condition + p.hide_mobile").text().strip()
 
-        try:
-            sleeve_condition = (
-                tr.find("span", string=re.compile("Sleeve:"))
-                .find_next_sibling("span")
-                .text.strip()
-                .split("\n")[0]
-                .strip()
-            )
-        except AttributeError:
-            sleeve_condition = None
-            
+        media_condition = None
+        sleeve_condition = None
+        keys = tr.css("span.condition-label-mobile")
+        values = tr.css("span.condition-label-mobile + span")
+        for k, v in zip(keys, values):
+            if k.text().strip() == "Media:":
+                media_condition = v.text().strip().split("\n")[0].strip()
+            if k.text().strip() == "Sleeve:":
+                sleeve_condition = v.text().strip().split("\n")[0].strip()
+
         # seller info
-        seller_block = tr.find("div", class_="seller_block")
-        seller_name = seller_block.find("a").text.strip()
+        seller_name = tr.css_first("div.seller_block a").text().strip()
         try:
-            seller_ratings = tr.find(
-                "span", class_="star_rating"
-            ).parent.text.strip()
+            seller_ratings = (
+                tr.css_first("span.star_rating").parent.text().strip()
+            )
         except AttributeError:
             seller_ratings = "New Seller"
-        ships_from = (
-            tr.find("span", string=re.compile("Ships From:"))
-            .parent.text.split(":")[-1]
-            .strip()
-        )
+        ships_from = None
+        for span in tr.css("td.seller_info span.mplabel"):
+            if span.text().strip().lower() == "ships from:":
+                ships_from = span.parent.text().split(":")[-1].strip()
 
         # price info
-        price_el = tr.find("span", class_="price")
-        price_currency = price_el.get("data-currency")
-        price_value = price_el.get("data-pricevalue")
+        price_el = tr.css_first("span.price")
+        price_currency = price_el.attrs.get("data-currency")
+        price_value = price_el.attrs.get("data-pricevalue")
         conversion_rate = conversions[price_currency]
         price_dollars = round(float(price_value) / float(conversion_rate), 2)
         shipping = (
-            tr.find("span", class_="item_shipping")
-            .text.strip()
+            tr.css_first("span.item_shipping")
+            .text()
+            .strip()
             .split("\n")[0]
             .strip()
         )
+
         shipping_value = "".join(
             [i for i in shipping if i.isdigit() or i == "."]
         )
         try:
-            total_price = tr.find("span", class_="converted_price").text.strip()
+            total_price = tr.css_first("span.converted_price").text.strip()
         except AttributeError:
             total_price = str(price_value)
         total_price_dollars = float(
@@ -160,24 +140,24 @@ def get_currency_conversions():
 
 
 def parse_page(response, conversions):
-
-    soup = BeautifulSoup(response.content, "html.parser")
+    tree = HTMLParser(response.content)
 
     total = (
-        soup.find("strong", class_="pagination_total")
-        .text.strip()
+        tree.css_first("strong.pagination_total")
+        .text()
+        .strip()
         .split()[-1]
         .strip()
     )
-    next_page = soup.find("a", class_="pagination_next")
+    next_page = tree.css_first("a.pagination_next")
     if next_page:
-        next_page = int(next_page["href"].rsplit('=', 1)[-1])
+        next_page = int(next_page.attrs["href"].rsplit("=", 1)[-1])
 
     # Parse the statistics section
-    statistics = parse_statistics_section(soup)
+    statistics = parse_statistics_section(tree)
 
     # Parse the records for sale section
-    records_for_sale = parse_records_for_sale(soup, conversions)
+    records_for_sale = parse_records_for_sale(tree, conversions)
 
     # Combine the parsed data into a structured dictionary
     parsed_data = {
@@ -191,29 +171,35 @@ def parse_page(response, conversions):
     # Convert the dictionary to a JSON string and return
     return parsed_data, next_page
 
-def main():
 
+def main():
     session = requests_cache.CachedSession("cache/prices")
-    
+
     conversions = get_currency_conversions()
 
-    releases = get_all_releases()
-    
+    releases = get_all_releases(per_page=250, first_page_only=False)
+
     for release in releases:
         release_id = release["basic_information"]["id"]
+        print(release_id)
 
         response = fetch_page(session, release_id, page=1)
         parsed_json, next_page = parse_page(response, conversions)
         while next_page:
             response = fetch_page(session, release_id, page=next_page)
             next_json, next_page = parse_page(response, conversions)
-            parsed_json["records_for_sale"].extend(next_json["records_for_sale"])
-        
+            parsed_json["records_for_sale"].extend(
+                next_json["records_for_sale"]
+            )
+
         parsed_json["release_id"] = release_id
-        
+        print(parsed_json["n_for_sale"])
+        print()
         with open(f"prices.jsonl", "a") as outfile:
             outfile.write(json.dumps(parsed_json))
             outfile.write("\n")
+            outfile.flush()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
