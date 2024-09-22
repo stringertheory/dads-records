@@ -182,7 +182,6 @@ def main():
     for release in releases:
         release_id = release["basic_information"]["id"]
         print(release_id)
-
         response = fetch_page(session, release_id, page=1)
         parsed_json, next_page = parse_page(response, conversions)
         while next_page:
