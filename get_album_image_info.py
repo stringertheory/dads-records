@@ -121,7 +121,7 @@ def main():
     html_filename = os.path.join(batch_directory, "index.html")
 
     results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = {
             executor.submit(get_image_data, client, f): i
             for (i, f) in enumerate(image_filename_list)

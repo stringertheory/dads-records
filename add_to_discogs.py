@@ -23,7 +23,7 @@ testing_folder_id = "7758632"
 
 def sleep(response):
     if not hasattr(response, "from_cache") or (hasattr(response, "from_cache") and not response.from_cache):
-        delay = 0.6 + random.random()
+        delay = 1 + random.random()
         print(f"sleep for {delay:.1f}")
         time.sleep(delay)
     else:

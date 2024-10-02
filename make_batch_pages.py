@@ -17,12 +17,14 @@ def main():
     for path in sorted(glob.glob("records/*")):
         if os.path.isdir(path):
             batch_number = os.path.basename(path)
-            batches.append(
-                {
-                    "number": batch_number,
-                    "link": f"/records/{batch_number}/",
-                }
-            )
+            csv_filename = f"records/{batch_number}/artist_album.csv"
+            if os.path.isfile(csv_filename):
+                batches.append(
+                    {
+                        "number": batch_number,
+                        "link": f"/records/{batch_number}/",
+                    }
+                )
 
     for batch in batches:
         batch_number = batch["number"]
