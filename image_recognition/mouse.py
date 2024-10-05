@@ -108,9 +108,10 @@ if __name__ == "__main__":
     for filename in filenames:
         pd = PolygonDrawer()
         points = pd.run(filename)
-        out_filename = make_out_filename(filename, "manual", ".json")
-        with open(out_filename, "w") as outfile:
-            json.dump(points, outfile)
+        if len(points) == 4:
+            out_filename = make_out_filename(filename, "manual", ".json")
+            with open(out_filename, "w") as outfile:
+                json.dump(points, outfile)
 
 
 
