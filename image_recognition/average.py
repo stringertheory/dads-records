@@ -1,3 +1,4 @@
+import os
 import sys
 import glob
 import numpy as np
@@ -41,7 +42,7 @@ image_data = []
 blurred_data = []
 for img in images:
     this_image = cv2.imread(img, 1)
-    blurred = cv2.medianBlur(this_image, 101)
+    blurred = this_image#cv2.medianBlur(this_image, 11)
     blurred_data.append(blurred)
     image_data.append(this_image)
 
@@ -54,42 +55,57 @@ for i in range(len(blurred_data)):
         beta = 1.0 - alpha
         avg_image = cv2.addWeighted(blurred_data[i], alpha, avg_image, beta, 0.0)
 
-cv2.imshow("BBOX", avg_image)
-cv2.waitKey(0)
+# cv2.imshow("BBOX", avg_image)
+# cv2.waitKey(0)
 
 lsd = cv2.createLineSegmentDetector(0)
 
+def make_out_filename(image_path, out_dir, ext=None):
+    out_parts = image_path.split("/")
+    batch = out_parts[-2]
+    basename = out_parts[-1]
+    out_dir = os.path.join(out_dir, batch)
+    os.makedirs(out_dir, exist_ok=True)
+    out_filename = os.path.join(out_dir, basename)
+    if ext:
+        base, ext = os.path.splitext(out_filename)
+        out_filename = base + ext
+    return out_filename
+
 # Detect lines in the image
-for image in image_data:
+for in_filename, image in zip(images, image_data):
     image3 = cv2.absdiff(image, avg_image)
-    # image3 = run_histogram_equalization(image3)
-    all_lines = []
-    for img in cv2.split(image3):
-        gray = np.float32(img)
-        dst = cv2.goodFeaturesToTrack(gray, 27, 0.01, 10) 
+    image3 = run_histogram_equalization(image3)
+    out_filename = make_out_filename(in_filename, "ave")
+    cv2.imwrite(out_filename, image3)
+    break
+    # all_lines = []
+    # for img in cv2.split(image3):
+    #     gray = np.float32(img)
+    #     dst = cv2.goodFeaturesToTrack(gray, 27, 0.01, 10) 
 
-        # dst = cv2.cornerHarris(gray, 5, 3, 0.04)
-        dst = np.intp(dst)
+    #     # dst = cv2.cornerHarris(gray, 5, 3, 0.04)
+    #     dst = np.intp(dst)
 
-        for i in dst:
-            print(i.ravel())
-            x, y = i.ravel() 
-            cv2.circle(img, (x, y), 3, 255, -1) 
+    #     for i in dst:
+    #         print(i.ravel())
+    #         x, y = i.ravel() 
+    #         cv2.circle(img, (x, y), 3, 255, -1) 
 
-        # cv2.imshow('BBOX',img)
-        # cv2.waitKey(0)
+    #     # cv2.imshow('BBOX',img)
+    #     # cv2.waitKey(0)
         
-        lines, width, prec, nfa = lsd.detect(img)
-        for line in lines:
-            info = line_info(line)
-            if info["length"] > 3:
-                if info["slope"] > 10 or info["slope"] < 1 / 10:
-                    all_lines.extend(line)
+    #     lines, width, prec, nfa = lsd.detect(img)
+    #     for line in lines:
+    #         info = line_info(line)
+    #         if info["length"] > 3:
+    #             if info["slope"] > 10 or info["slope"] < 1 / 10:
+    #                 all_lines.extend(line)
 
-    all_lines = np.array(all_lines)
-    drawn_img = lsd.drawSegments(image, all_lines)
-    cv2.imshow("BBOX", drawn_img)
-    cv2.waitKey(0)
+    # all_lines = np.array(all_lines)
+    # drawn_img = lsd.drawSegments(image, all_lines)
+    # cv2.imshow("BBOX", drawn_img)
+    # cv2.waitKey(0)
     
 
  
